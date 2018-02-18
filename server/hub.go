@@ -20,16 +20,16 @@ type Hub struct {
 	unregister chan *Client
 
 	// time to next message
-	timeToMessage int
+	hasMessage bool
 }
 
 func newHub() *Hub {
 	return &Hub{
-		broadcast:     make(chan []byte),
-		register:      make(chan *Client),
-		unregister:    make(chan *Client),
-		clients:       make(map[*Client]bool),
-		timeToMessage: 0,
+		broadcast:  make(chan []byte),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+		clients:    make(map[*Client]bool),
+		hasMessage: false,
 	}
 }
 

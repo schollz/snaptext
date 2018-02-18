@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -96,12 +95,7 @@ func handlerPostMessage(c *gin.Context) {
 		log.Debugf("got message: %+v", m)
 		message = fmt.Sprintf("got message for %s", m.To)
 		err = addToDB(m)
-		if _, ok := hubs[m.To]; ok {
-			var mSocket MessageHTML
-			mSocket.Meta = "new"
-			bMSocket, _ := json.Marshal(mSocket)
-			hubs[m.To].broadcast <- bMSocket
-		}
+		broadcastNextMessage(m.To, false)
 		return
 	}(c)
 	if err != nil {

@@ -95,23 +95,32 @@ func (c *Client) readPump() {
 			log.Debugf("got message: %+v", rm)
 		}
 		if rm.Message == "next" {
-			if _, ok := hubs[rm.Name]; ok {
-				message, errMessage := popMessage(rm.Name)
-				var messageHTML MessageHTML
-				if errMessage != nil {
-					messageHTML.Message = "No messages."
-				} else {
-					messageHTML.Message = message.Message
-					messageHTML.From = fmt.Sprintf("- %s (%s)", message.From, humanize.Time(message.Timestamp))
-				}
-				bMessage, errMarshal := json.Marshal(messageHTML)
-				if errMarshal != nil {
-					log.Warn(errMarshal)
-					continue
-				}
-				hubs[rm.Name].broadcast <- bMessage
-			}
+			broadcastNextMessage(rm.Name, true)
 		}
+	}
+}
+
+func broadcastNextMessage(name string, force bool) {
+	if _, ok := hubs[name]; ok {
+		if !force && hubs[name].hasMessage {
+			return
+		}
+		message, errMessage := popMessage(name)
+		var messageHTML MessageHTML
+		if errMessage != nil {
+			messageHTML.Message = "No messages."
+			hubs[name].hasMessage = false
+		} else {
+			messageHTML.Message = message.Message
+			messageHTML.From = fmt.Sprintf("- %s<br>(%s)<br>Seen by %d.", message.From, humanize.Time(message.Timestamp), len(hubs[name].clients))
+			hubs[name].hasMessage = true
+		}
+		bMessage, errMarshal := json.Marshal(messageHTML)
+		if errMarshal != nil {
+			log.Warn(errMarshal)
+			return
+		}
+		hubs[name].broadcast <- bMessage
 	}
 }
 

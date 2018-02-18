@@ -17,11 +17,8 @@ func main() {
 	flag.BoolVar(&doDebug, "debug", false, "enable debugging")
 	flag.Parse()
 
-	if doDebug {
-		server.SetLogLevel("debug")
-	} else {
-		server.SetLogLevel("info")
-	}
+	server.SetLogLevel("debug")
+
 	err := server.Run(port)
 	if err != nil {
 		fmt.Printf("Error: '%s'", err.Error())

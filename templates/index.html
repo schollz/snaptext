@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Chat Example</title>
+    <script type="text/javascript">
+        var conn;
+        window.onload = function () {
+            document.querySelector("#nextMessage").addEventListener("click", function (event) {
+                event.preventDefault();
+                console.log("next message")
+                if (!conn) {
+                    return false;
+                }
+                conn.send(JSON.stringify({
+                    "name": "{{ .Name }}",
+                    "message": "next"
+                }));
+                return false;
+            }, false);
+            if (window["WebSocket"]) {
+                console.log("connecting to server")
+                conn = new WebSocket(window.location.origin.replace("http", "ws") + "/ws?name={{ .Name }}");
+                conn.onclose = function (evt) {
+                    var item = document.createElement("div");
+                    item.innerHTML = "<b>Connection closed.</b>";
+                    appendLog(item);
+                };
+                conn.onmessage = function (evt) {
+                    data = JSON.parse(evt.data)
+                    console.log(data);
+                    if (data.meta == "new") {
+                        if (document.getElementById("fromHTML").innerHTML == "") {
+                            conn.send(JSON.stringify({
+                                "name": "{{ .Name }}",
+                                "message": "next"
+                            }));
+                        }
+                    } else {
+                        document.getElementById("messageHTML").innerHTML = data.message
+                        document.getElementById("fromHTML").innerHTML = data.from
+                    }
+                };
+                conn.onerror = function (evt) {
+                    console.log("error")
+                    console.log(evt);
+                }
+                conn.onopen = function (evt) {
+                    console.log("connected")
+                    conn.send(JSON.stringify({
+                        "name": "{{ .Name }}",
+                        "message": "next"
+                    }));
+                }
+            } else {
+                var item = document.getElementById("messageHTML");
+                item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+            }
+        };
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Acme" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Acme', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <article class="mt5 mw7 center ph3 ph5-ns tc br2 pv5 bg-washed-green dark-green mb5">
+        <h1 class="fw6 f3 f2-ns lh-title mt0 mb3" id="messageHTML">
+            No messages.
+        </h1>
+        <h2 class="fw2 f4 lh-copy mt0 mb3">
+            <span id="fromHTML"></span>
+        </h2>
+        <div class="pt2">
+            <span id="expirationHTML"></span>
+        </div>
+        <div class="pt4">
+            <a href="#0" id="nextMessage" class="f5 no-underline black bg-animate hover-bg-black hover-white inline-flex items-center pa3 ba border-box">
+                <span class="pr1">Next</span>
+                <svg class="w1" data-icon="chevronRight" viewBox="0 0 32 32" style="fill:currentcolor">
+                    <title>chevronRight icon</title>
+                    <path d="M12 1 L26 16 L12 31 L8 27 L18 16 L8 5 z"></path>
+                </svg>
+            </a>
+        </div>
+    </article>
+
+
+</body>
+
+<!-- <div id="log"></div> -->
+<!-- <form id="form">
+    <input type="submit" value="Send" />
+    <input type="text" id="msg" size="64"/>
+</form> -->
+</body>
+
+</html>

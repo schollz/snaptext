@@ -14,7 +14,7 @@ type messageJSON struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func newMessage(m messageJSON) (messageJSON, error) {
+func validateMessage(m messageJSON) (messageJSON, error) {
 	var err error
 	if m.Display == 0 {
 		m.Display = 10

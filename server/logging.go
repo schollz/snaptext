@@ -4,6 +4,7 @@ import (
 	log "github.com/cihub/seelog"
 )
 
+// SetLogLevel determines the log level
 func SetLogLevel(level string) (err error) {
 
 	// https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit

@@ -7,12 +7,10 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
 	log "github.com/cihub/seelog"
-	humanize "github.com/dustin/go-humanize"
 	"github.com/gorilla/websocket"
 )
 
@@ -43,7 +41,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-type MessageHTML struct {
+type messageHTML struct {
 	Meta    string `json:"meta"`
 	Message string `json:"message"`
 	From    string `json:"from"`
@@ -95,32 +93,8 @@ func (c *Client) readPump() {
 			log.Debugf("got message: %+v", rm)
 		}
 		if rm.Message == "next" {
-			broadcastNextMessage(rm.Name, true)
+			c.hub.broadcastNextMessage(true)
 		}
-	}
-}
-
-func broadcastNextMessage(name string, force bool) {
-	if _, ok := hubs[name]; ok {
-		if !force && hubs[name].hasMessage {
-			return
-		}
-		message, errMessage := popMessage(name)
-		var messageHTML MessageHTML
-		if errMessage != nil {
-			messageHTML.Message = "No messages."
-			hubs[name].hasMessage = false
-		} else {
-			messageHTML.Message = message.Message
-			messageHTML.From = fmt.Sprintf("- %s<br>(%s)<br>Seen by %d.", message.From, humanize.Time(message.Timestamp), len(hubs[name].clients))
-			hubs[name].hasMessage = true
-		}
-		bMessage, errMarshal := json.Marshal(messageHTML)
-		if errMarshal != nil {
-			log.Warn(errMarshal)
-			return
-		}
-		hubs[name].broadcast <- bMessage
 	}
 }
 

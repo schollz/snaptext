@@ -5,24 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/schollz/jsonstore"
-
 	log "github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 )
 
-func init() {
-	var err error
-	db, err = jsonstore.Open(databaseName)
-	if err != nil {
-		db = new(jsonstore.JSONStore)
-	}
-	showingMessage = make(map[string]struct{})
-}
-
-var showingMessage map[string]struct{}
 var hubs map[string]*Hub
 
+// Run will run the main program
 func Run(port string) (err error) {
 	defer log.Flush()
 
@@ -88,14 +77,11 @@ func handlerPostMessage(c *gin.Context) {
 		if err != nil {
 			return
 		}
-		m, err = newMessage(m)
-		if err != nil {
+		message = fmt.Sprintf("got message for %s", m.To)
+		if _, ok := hubs[m.To]; !ok {
 			return
 		}
-		log.Debugf("got message: %+v", m)
-		message = fmt.Sprintf("got message for %s", m.To)
-		err = addToDB(m)
-		broadcastNextMessage(m.To, false)
+		err = hubs[m.To].handleMessage(m)
 		return
 	}(c)
 	if err != nil {

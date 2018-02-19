@@ -3,7 +3,7 @@
 
 <head>
     <title>SnapText</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/tachyons.min.css">
     <link href="https://fonts.googleapis.com/css?family=Acme" rel="stylesheet">
     <style>
@@ -92,7 +92,7 @@
                 {{ if .Form }}
                 <span class="dib mr4 mr5-ns">
                 <span class="gray">writing</span>&nbsp;
-                <a class="link white-80 hover-light-purple" href="https://github.com/schollz/snaptext">snaptext</a>
+                <a class="link white-80 hover-light-purple" href="/">snaptext</a>
                 <span class="gray"><br>&nbsp;</span>
                 </span>
             <span class="dib mr4 gray dim mr5-ns">Your message will show up right after it is sent.
@@ -100,13 +100,17 @@
                 {{ else }}
                 <span class="dib mr4 mr5-ns">
                         <span class="gray">reading</span>&nbsp;
-                        <a class="link white-80 hover-light-purple" href="https://github.com/schollz/snaptext">snaptext</a>
+                        <a class="link white-80 hover-light-purple" href="/">snaptext</a>
                         <span class="gray">
-                        <br>messages for zack</span>
+                        <br>messages for <a class="link white-80 hover-light-purple" href="/{{ .Name }}">{{ .Name }}</a></span>
                     </span>
-                    <span class="dib mr4 gray dim mr5-ns">Your message will show up right after it is sent.
+                    <span class="dib  mr4 gray dim mr5-ns">Your message will show up right after it is sent.
                         <br>Once shown, your message is deleted.</span>        
                 {{ end }}
+            </p>
+            <br>
+            <p class="f6 tc gray">
+                snaptext <a class="white-80 hover-light-purple" href="https://github.com/schollz/snaptext">source</a> is free as in freedom
             </p>
         </footer>
     </div>

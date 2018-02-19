@@ -58,7 +58,7 @@ func Run(port string) (err error) {
 		c.String(http.StatusOK, "OK")
 	})
 	r.GET("/*name", func(c *gin.Context) {
-		name := c.Param("name")
+		name := strings.ToLower(c.Param("name"))
 		if len(name) == 1 {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"Name": name[1:],

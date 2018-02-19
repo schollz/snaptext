@@ -2,8 +2,11 @@ package server
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 	"time"
 
 	log "github.com/cihub/seelog"
@@ -38,6 +41,11 @@ func Run(port string) (err error) {
 		}
 	}()
 
+	// load static stuff
+	mainCSS, err := ioutil.ReadFile(path.Join("static", "tachyons.min.css"))
+	if err != nil {
+		return
+	}
 	// setup gin server
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -63,6 +71,8 @@ func Run(port string) (err error) {
 				time.Sleep(50 * time.Millisecond)
 			}
 			hubs[name].serveWs(c.Writer, c.Request)
+		} else if strings.Contains(name, "/static") {
+			c.Data(http.StatusOK, "text/css", mainCSS)
 		} else {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"Name": name[1:],

@@ -28,8 +28,8 @@ func validateMessage(m messageJSON) (messageJSON, error) {
 		m.Display = 10
 	}
 	m.Timestamp = time.Now()
-	m.To = strings.TrimSpace(m.To)
-	m.From = strings.TrimSpace(m.From)
+	m.To = strings.ToLower(strings.TrimSpace(m.To))
+	m.From = strings.ToLower(strings.TrimSpace(m.From))
 	m.Message = strings.TrimSpace(m.Message)
 	p := bluemonday.NewPolicy()
 	p.AllowStandardURLs()

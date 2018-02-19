@@ -27,6 +27,8 @@ type Hub struct {
 	Name string
 
 	hasMessage bool
+
+	deleted bool
 }
 
 func newHub(name string) *Hub {
@@ -75,6 +77,12 @@ func (h *Hub) serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Error(err)
 		return
 	}
+	if h == nil {
+		return
+	}
+	if h.deleted {
+		return
+	}
 	client := &Client{hub: h, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
@@ -105,7 +113,7 @@ func (h *Hub) broadcastNextMessage(force bool) {
 	} else {
 		messageHTML.Message = messages[0].Message
 		messageHTML.Submessage = fmt.Sprintf("Sent from %s %s.", messages[0].From, humanize.Time(messages[0].Timestamp))
-		if len(messages) > 0 {
+		if len(messages) > 1 {
 			messageHTML.Meta = "more messages"
 		}
 		h.hasMessage = true

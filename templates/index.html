@@ -2,10 +2,46 @@
 <html lang="en">
 
 <head>
-    <title>Chat Example</title>
+    <title>SnapText</title>
     <script type="text/javascript">
         var conn;
         window.onload = function () {
+            {{ if .Form }}
+            document.querySelector("#sendmessage").addEventListener("click", function (event) {
+                event.preventDefault();
+                console.log("submitting message");
+                var xhr = new XMLHttpRequest();
+                var url = "url";
+                xhr.open("POST", "/", true);
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var jsonPayload = JSON.parse(xhr.responseText);
+                        console.log(jsonPayload);
+                        if (jsonPayload.success==true) {
+                            swal({
+                                text: jsonPayload.message,
+                                icon: "success",
+                            });
+                            document.getElementById("messageHTML").innerText = ""
+                            document.getElementById("recipient").innerText = ""
+                        } else {
+                            swal({
+                                text: jsonPayload.message,
+                                icon: "error",
+                            }); 
+                        }
+                    }
+                };
+                var toText = document.getElementById("recipient").innerText;
+                var fromText = document.getElementById("sender").innerText;
+                var messageText = document.getElementById("messageHTML").innerText;
+                var data = JSON.stringify({"to": toText, "from":fromText,"message":messageText});
+                console.log(data);
+                xhr.send(data);
+                return false;
+            }, false);
+            {{ else }}
             document.querySelector("#nextmessage").addEventListener("click", function (event) {
                 event.preventDefault();
                 console.log("next message")
@@ -18,6 +54,7 @@
                 }));
                 return false;
             }, false);
+            {{ end }}
             var reconnection;
 
             function connect() {
@@ -61,13 +98,21 @@
                     var item = document.getElementById("messageHTML");
                     item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
                 }
-            }
-            connect();
+            } 
+            {{if not .Form }}
+            connect(); 
+           {{ end }}
+
+            document.getElementById("messageHTML").focus();
         };
     </script>
     <link rel="stylesheet" href="/static/tachyons.min.css">
+    <script src="/static/sweetalert.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Acme" rel="stylesheet">
     <style>
+        .swal-overlay {
+        background-color: rgba(43, 165, 137, 0.45);
+        }
         body {
             font-family: 'Acme', sans-serif;
         }
@@ -115,18 +160,31 @@
             grid-row-start: 2;
             grid-row-end: 3;
         }
+
+        [contenteditable]:focus {
+            outline: 0px solid transparent;
+        }
+        div:empty:before {
+            content:attr(data-text);
+            color:gray
+        }
     </style>
 </head>
 
 <body>
     <div class="wrapper">
         <div class="pa3 pa4-ns mt5">
-            <div class="black b f1 f-headline-ns tc db mb3 mb4-ns" id="messageHTML">
-                No messages.
-            </div>
+            <div class="black b f1 f-headline-ns tc db mb3 mb4-ns" id="messageHTML" {{ if .Form }}contenteditable="true" data-text="Type your message."{{ end }}>{{ if .Form }}{{else}}No messages.{{end}}</div>
             <div class="tc pb3">
-                <div class="b gray f6 f5-ns dib mr3" id="submessageHTML"></div>
+                {{ if .Form }}To: &nbsp;
+                <div class="b f6 f5-ns dib mr3" id="recipient" contenteditable="true" data-text="Recipient"></div>
+                From: &nbsp;
+                <div class="b f6 f5-ns dib mr3" id="sender" contenteditable="true" data-text="Sender"></div>
+                <a class="link dim gray f6 f5-ns dib mr3" id="sendmessage">Send</a>
+                {{ else }}
+                <div class="b gray f6 f5-ns dib mr3" id="submessageHTML" ></div>
                 <a class="link dim gray f6 f5-ns dib mr3" id="nextmessage"></a>
+                {{ end }}
             </div>
         </div>
         <div class="push"></div>

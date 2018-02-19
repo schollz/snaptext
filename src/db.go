@@ -87,7 +87,7 @@ func (d *Database) popMessage() (messages []messageJSON, err error) {
 	if err != nil {
 		return
 	}
-	if len(messages) == 1 {
+	if len(messages) <= 1 {
 		err = d.saveMessages([]messageJSON{})
 	} else {
 		err = d.saveMessages(messages[1:])

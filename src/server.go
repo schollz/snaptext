@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -32,6 +33,7 @@ func Run(port string) (err error) {
 				// log.Debugf("hub %s has %d clients", name, len(hubs[name].clients))
 				if len(hubs[name].clients) == 0 {
 					namesToDelete[name] = struct{}{}
+					hubs[name].deleted = true
 				}
 			}
 			for name := range namesToDelete {
@@ -58,7 +60,10 @@ func Run(port string) (err error) {
 	r.GET("/*name", func(c *gin.Context) {
 		name := c.Param("name")
 		if len(name) == 1 {
-			c.String(http.StatusOK, "OK")
+			c.HTML(http.StatusOK, "index.html", gin.H{
+				"Name": name[1:],
+				"Form": true,
+			})
 		} else if name == "/ws" {
 			name = c.DefaultQuery("name", "")
 			if name == "" {
@@ -76,6 +81,7 @@ func Run(port string) (err error) {
 		} else {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"Name": name[1:],
+				"Form": false,
 			})
 		}
 	})
@@ -90,29 +96,27 @@ func handlerPostMessage(c *gin.Context) {
 		var m messageJSON
 		err = c.ShouldBindJSON(&m)
 		if err != nil {
+			err = errors.New("message, sender, or recipient cannot be empty")
 			return
 		}
-		log.Debug("bound message")
-		message = fmt.Sprintf("got message for %s", m.To)
 		m, err = validateMessage(m)
+		message = fmt.Sprintf("Sent. Message available at /%s", m.To)
 		if err != nil {
 			return
 		}
-		log.Debug("validated messages")
 		db := open(m.To)
 		err = db.saveMessage(m)
 		if err != nil {
 			log.Error(err)
 		}
 		db.close()
-		log.Debug("saved message")
 		if _, ok := hubs[m.To]; ok {
 			hubs[m.To].broadcastNextMessage(false)
 		}
-		log.Debug("broadcast message")
 		return
 	}(c)
 	if err != nil {
+		log.Warn(err)
 		message = err.Error()
 	}
 	c.JSON(http.StatusOK, gin.H{

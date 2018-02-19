@@ -1,8 +1,10 @@
-# textmailmachine
+# snaptext
 
-This is like a voice mail machine, except you can leave text messages for anyone. A message to X will be available at `textmailmachine.schollz/X` for the specified amount of time and then it is deleted off the server forever.
+This is like a voice mail machine, except you can leave text messages for anyone. A message to someone named "X" will be available at `snaptext.schollz/X`. Once someone looks at the message, it will be deleted. Messages are updated in realtime, so you can just leave your browser open (like a very silly isntant messenger).
 
 ## API
+
+The API is incredibly simple. There is only one endpoint, to post a message.
 
 **POST /** - send a messsage
 
@@ -14,8 +16,7 @@ Example JSON:
 {
     "to":"Zack",
     "from":"Your friend",
-    "message":"Hi Zack!",
-    "display":3
+    "message":"Hi Zack!"
 }
 ```
 

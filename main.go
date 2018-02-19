@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/schollz/textmailmachine/server"
+	"github.com/schollz/snaptext/server"
 )
 
 var (

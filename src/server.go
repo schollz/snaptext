@@ -3,10 +3,8 @@ package server
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 	"time"
 
@@ -43,11 +41,6 @@ func Run(port string) (err error) {
 		}
 	}()
 
-	// load static stuff
-	mainCSS, err := ioutil.ReadFile(path.Join("static", "tachyons.min.css"))
-	if err != nil {
-		return
-	}
 	// setup gin server
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -77,7 +70,15 @@ func Run(port string) (err error) {
 			}
 			hubs[name].serveWs(c.Writer, c.Request)
 		} else if strings.Contains(name, "/static") {
-			c.Data(http.StatusOK, "text/css", mainCSS)
+			filename := name[1:]
+			var data []byte
+			var errAssset error
+			data, errAssset = Asset(filename)
+			if errAssset != nil {
+				c.String(http.StatusInternalServerError, "Could not find data")
+			}
+			c.Data(http.StatusOK, contentType(filename), data)
+			return
 		} else {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"Name": name[1:],
@@ -143,4 +144,20 @@ func addCORS(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET")
 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, X-Max")
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
+func contentType(filename string) string {
+	switch {
+	case strings.Contains(filename, ".css"):
+		return "text/css"
+	case strings.Contains(filename, ".jpg"):
+		return "image/jpeg"
+	case strings.Contains(filename, ".png"):
+		return "image/png"
+	case strings.Contains(filename, ".js"):
+		return "application/javascript"
+	case strings.Contains(filename, ".xml"):
+		return "application/xml"
+	}
+	return "text/html"
 }

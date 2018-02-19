@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/schollz/snaptext/server"
+	"github.com/schollz/snaptext/src"
 )
 
 var (
@@ -19,7 +19,7 @@ func main() {
 
 	server.SetLogLevel("debug")
 
-	err := server.Run(port)
+	err := src.Run(port)
 	if err != nil {
 		fmt.Printf("Error: '%s'", err.Error())
 	}

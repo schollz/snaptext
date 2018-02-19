@@ -47,6 +47,29 @@ func validateMessage(m messageJSON) (messageJSON, error) {
 	return m, err
 }
 
+
+func lock(name string)  {
+	d.fileLock = flock.NewFlock(d.name + ".lock")
+	for {
+		locked, err := d.fileLock.TryLock()
+		if err == nil && locked {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+func unlock(name string) {
+	// close filelock
+	err = d.fileLock.Unlock()
+	if err != nil {
+		d.logger.Log.Error(err)
+	} else {
+		os.Remove(d.name + ".lock")
+	}
+	}
+
+	
 func saveMessages(name string, messages []messageJSON) (err error) {
 	messageQueue, err := json.Marshal(h.Queue.Messages)
 	if err != nil {

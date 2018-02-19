@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	log "github.com/cihub/seelog"
@@ -10,6 +11,10 @@ import (
 )
 
 var hubs map[string]*Hub
+
+func init() {
+	os.MkdirAll("data", 0644)
+}
 
 // Run will run the main program
 func Run(port string) (err error) {
@@ -53,11 +58,11 @@ func Run(port string) (err error) {
 				return
 			}
 			if _, ok := hubs[name]; !ok {
-				hubs[name] = newHub()
+				hubs[name] = newHub(name)
 				go hubs[name].run()
 				time.Sleep(50 * time.Millisecond)
 			}
-			serveWs(hubs[name], c.Writer, c.Request)
+			hubs[name].serveWs(c.Writer, c.Request)
 		} else {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"Name": name[1:],

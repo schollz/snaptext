@@ -3,6 +3,9 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"path"
 	"sync"
 
 	log "github.com/cihub/seelog"
@@ -27,6 +30,8 @@ type Hub struct {
 	// time to next message
 	Queue messageQueue
 
+	Name string
+
 	hasMessage bool
 }
 
@@ -35,15 +40,21 @@ type messageQueue struct {
 	sync.RWMutex
 }
 
-func newHub() *Hub {
-	return &Hub{
+func newHub(name string) *Hub {
+	h := &Hub{
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
 		hasMessage: false,
+		Name:       name,
 		Queue:      messageQueue{Messages: []messageJSON{}},
 	}
+	err := h.loadMessages()
+	if err != nil {
+		log.Warn(err)
+	}
+	return h
 }
 
 func (h *Hub) run() {
@@ -85,11 +96,57 @@ func (h *Hub) handleMessage(m messageJSON) (err error) {
 	return
 }
 
+// serveWs handles websocket requests from the peer.
+func (h *Hub) serveWs(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	client := &Client{hub: h, conn: conn, send: make(chan []byte, 256)}
+	client.hub.register <- client
+
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go client.writePump()
+	go client.readPump()
+}
+
+func (h *Hub) saveMessages() (err error) {
+	// always write state
+	h.Queue.Lock()
+	messageQueue, err := json.Marshal(h.Queue.Messages)
+	h.Queue.Unlock()
+	if err != nil {
+		return
+	}
+	err = ioutil.WriteFile(path.Join("data", h.Name+".json"), messageQueue, 0644)
+	return
+}
+
+func (h *Hub) loadMessages() (err error) {
+	hData, err := ioutil.ReadFile(path.Join("data", h.Name+".json"))
+	if err != nil {
+		return
+	}
+	var messages []messageJSON
+	err = json.Unmarshal(hData, &messages)
+	if err != nil {
+		return
+	}
+	h.Queue.Lock()
+	h.Queue.Messages = messages
+	h.Queue.Unlock()
+	return
+}
+
 func (h *Hub) broadcastNextMessage(force bool) {
+	defer h.saveMessages()
 	// overwrite current message only if forced
 	// or if there is currently no message
 	if !force && h.hasMessage {
 		log.Debug("not sending out message")
+		h.broadcast <- []byte(`{"meta":"new"}`)
 		return
 	}
 	h.Queue.Lock()
@@ -105,10 +162,14 @@ func (h *Hub) broadcastNextMessage(force bool) {
 			h.Queue.Messages = h.Queue.Messages[1:]
 		}
 		messageHTML.Message = message.Message
-		messageHTML.From = fmt.Sprintf("- %s<br>(%s)<br>Seen by %d.", message.From, humanize.Time(message.Timestamp), len(h.clients))
+		messageHTML.Submessage = fmt.Sprintf("Sent from %s %s.", message.From, humanize.Time(message.Timestamp))
+		if len(h.Queue.Messages) > 0 {
+			messageHTML.Meta = "more messages"
+		}
 		h.hasMessage = true
 	}
 	h.Queue.Unlock()
+
 	bMessage, errMarshal := json.Marshal(messageHTML)
 	if errMarshal != nil {
 		log.Warn(errMarshal)

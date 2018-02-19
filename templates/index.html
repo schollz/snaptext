@@ -6,7 +6,7 @@
     <script type="text/javascript">
         var conn;
         window.onload = function () {
-            document.querySelector("#nextMessage").addEventListener("click", function (event) {
+            document.querySelector("#nextmessage").addEventListener("click", function (event) {
                 event.preventDefault();
                 console.log("next message")
                 if (!conn) {
@@ -18,44 +18,51 @@
                 }));
                 return false;
             }, false);
-            if (window["WebSocket"]) {
-                console.log("connecting to server")
-                conn = new WebSocket(window.location.origin.replace("http", "ws") + "/ws?name={{ .Name }}");
-                conn.onclose = function (evt) {
-                    var item = document.createElement("div");
-                    item.innerHTML = "<b>Connection closed.</b>";
-                    appendLog(item);
-                };
-                conn.onmessage = function (evt) {
-                    data = JSON.parse(evt.data)
-                    console.log(data);
-                    if (data.meta == "new") {
-                        if (document.getElementById("fromHTML").innerHTML == "") {
-                            conn.send(JSON.stringify({
-                                "name": "{{ .Name }}",
-                                "message": "next"
-                            }));
+            var reconnection;
+
+            function connect() {
+                console.log("trying to connect")
+                if (window["WebSocket"]) {
+                    console.log("connecting to server")
+                    conn = new WebSocket(window.location.origin.replace("http", "ws") + "/ws?name={{ .Name }}");
+                    conn.onclose = function (evt) {
+                        console.log("connection closed")
+                        document.getElementById("submessageHTML").innerHTML = "<em>No connection.</em>";
+                        reconnection = setTimeout(function () {
+                            connect();
+                        }, 1000);
+                    };
+                    conn.onmessage = function (evt) {
+                        data = JSON.parse(evt.data)
+                        console.log(data);
+                        if (typeof data.message != 'undefined') {
+                            document.getElementById("messageHTML").innerHTML = data.message
+                            document.getElementById("submessageHTML").innerHTML = data.submessage
                         }
-                    } else {
-                        document.getElementById("messageHTML").innerHTML = data.message
-                        document.getElementById("fromHTML").innerHTML = data.from
+                        if (data.meta != "") {
+                            document.getElementById("nextmessage").innerHTML = "Next message"
+                        } else {
+                            document.getElementById("nextmessage").innerHTML = ""
+                        }
+                    };
+                    conn.onerror = function (evt) {
+                        console.log("error")
+                        console.log(evt);
                     }
-                };
-                conn.onerror = function (evt) {
-                    console.log("error")
-                    console.log(evt);
+                    conn.onopen = function (evt) {
+                        clearTimeout(reconnection);
+                        console.log("connected")
+                        conn.send(JSON.stringify({
+                            "name": "{{ .Name }}",
+                            "message": "next"
+                        }));
+                    }
+                } else {
+                    var item = document.getElementById("messageHTML");
+                    item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
                 }
-                conn.onopen = function (evt) {
-                    console.log("connected")
-                    conn.send(JSON.stringify({
-                        "name": "{{ .Name }}",
-                        "message": "next"
-                    }));
-                }
-            } else {
-                var item = document.getElementById("messageHTML");
-                item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
             }
+            connect();
         };
     </script>
     <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
@@ -64,32 +71,80 @@
         body {
             font-family: 'Acme', sans-serif;
         }
+
+        a,
+        a:active,
+        a:focus,
+        a:hover,
+        a:link,
+        a:visited {
+            transition: color .15s ease-in;
+            transition-property: color;
+            transition-duration: 0.15s;
+            transition-timing-function: ease-in;
+            transition-delay: initial;
+        }
+
+        a:hover {
+            color: #ff4136;
+        }
+
+        a:focus {
+            color: #ff4136;
+        }
+
+        a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100%;
+            display: grid;
+            grid-template-rows: 1fr auto;
+        }
+
+        .footer {
+            grid-row-start: 2;
+            grid-row-end: 3;
+        }
     </style>
 </head>
 
 <body>
-
-    <article class="mt5 mw7 center ph3 ph5-ns tc br2 pv5 bg-washed-green dark-green mb5">
-        <h1 class="fw6 f3 f2-ns lh-title mt0 mb3" id="messageHTML">
-            No messages.
-        </h1>
-        <h2 class="fw2 f4 lh-copy mt0 mb3">
-            <span id="fromHTML"></span>
-        </h2>
-        <div class="pt2">
-            <span id="expirationHTML"></span>
+    <div class="wrapper">
+        <div class="pa3 pa4-ns mt5">
+            <div class="black b f1 f-headline-ns tc db mb3 mb4-ns" id="messageHTML">
+                No messages.
+            </div>
+            <div class="tc pb3">
+                <div class="b gray f6 f5-ns dib mr3" id="submessageHTML"></div>
+                <a class="link dim gray f6 f5-ns dib mr3" id="nextmessage"></a>
+            </div>
         </div>
-        <div class="pt4">
-            <a href="#0" id="nextMessage" class="f5 no-underline black bg-animate hover-bg-black hover-white inline-flex items-center pa3 ba border-box">
-                <span class="pr1">Next</span>
-                <svg class="w1" data-icon="chevronRight" viewBox="0 0 32 32" style="fill:currentcolor">
-                    <title>chevronRight icon</title>
-                    <path d="M12 1 L26 16 L12 31 L8 27 L18 16 L8 5 z"></path>
-                </svg>
-            </a>
-        </div>
-    </article>
-
+        <div class="push"></div>
+    </div>
+    <div class="footer">
+        <footer class="bg-near-black white-80 pv5 pv6-l ph4 mt4">
+            <p class="f4 tc">
+                <span class="dib mr4 mr5-ns">
+                    <span class="gray">showing</span>&nbsp;
+                    <a class="link white-80 hover-light-purple" href="https://github.com/schollz/snaptext">snaptext</a>
+                    <span class="gray">
+                        <br>messages for zack</span>
+                </span>
+                <span class="dib mr4 gray dim mr5-ns">Your message will show up right after it is sent.
+                    <br>Once shown, your message is deleted.</span>
+            </p>
+        </footer>
+    </div>
 
 </body>
 

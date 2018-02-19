@@ -32,7 +32,7 @@ func open(name string) *Database {
 	return d
 }
 
-func (d *Database) unlock() {
+func (d *Database) close() {
 	err := d.fileLock.Unlock()
 	if err != nil {
 		log.Error(err)
@@ -41,52 +41,56 @@ func (d *Database) unlock() {
 	}
 }
 
-func (d *Database) saveMessages(messages []messageJSON) (err error) {
-	messageBytes, err := json.Marshal(messages)
-	if err != nil {
-		return
-	}
-	err = ioutil.WriteFile(path.Join("data", d.Name+".json"), messageBytes, 0644)
-	return
-}
-
 func (d *Database) saveMessage(message messageJSON) (err error) {
+	log.Debug("saving message")
 	var messages []messageJSON
 	messagesB, errRead := ioutil.ReadFile(path.Join("data", d.Name+".json"))
+	log.Debug("loaded messages")
 	if errRead == nil {
 		err = json.Unmarshal(messagesB, &messages)
-		if err == nil {
+		if err != nil {
 			return err
 		}
+		log.Debug("unmarshaled")
 	} else {
 		messages = []messageJSON{}
 	}
 	messages = append(messages, message)
-	messageBytes, err := json.Marshal(messages)
-	if err != nil {
-		return
-	}
-	err = ioutil.WriteFile(path.Join("data", d.Name+".json"), messageBytes, 0644)
+	log.Debugf("have %d messages for %s", len(messages), d.Name)
+	err = d.saveMessages(messages)
+	log.Debugf("saved messages for %s", d.Name)
 	return
 }
 
-func (d *Database) popMessage() (message messageJSON, err error) {
+func (d *Database) saveMessages(messages []messageJSON) (err error) {
+	if len(messages) == 0 {
+		log.Debug("removing database")
+		err = os.Remove(path.Join("data", d.Name+".json"))
+	} else {
+		messageBytes, errMarshal := json.Marshal(messages)
+		if errMarshal != nil {
+			return errMarshal
+		}
+		err = ioutil.WriteFile(path.Join("data", d.Name+".json"), messageBytes, 0644)
+		log.Debugf("wrote %d messages", len(messages))
+	}
+	return
+}
+
+func (d *Database) popMessage() (messages []messageJSON, err error) {
 	messagesB, errRead := ioutil.ReadFile(path.Join("data", d.Name+".json"))
 	if errRead != nil {
 		err = errors.New("no messages")
 		return
 	}
-	var messages []messageJSON
 	err = json.Unmarshal(messagesB, &messages)
 	if err != nil {
 		return
 	}
-	message = messages[0]
 	if len(messages) == 1 {
-		messages = []messageJSON{}
+		err = d.saveMessages([]messageJSON{})
 	} else {
-		messages = messages[1:]
+		err = d.saveMessages(messages[1:])
 	}
-	err = saveMessages(d.Name, messages)
 	return
 }

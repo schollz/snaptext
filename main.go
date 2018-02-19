@@ -19,7 +19,7 @@ func main() {
 
 	server.SetLogLevel("debug")
 
-	err := src.Run(port)
+	err := server.Run(port)
 	if err != nil {
 		fmt.Printf("Error: '%s'", err.Error())
 	}

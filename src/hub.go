@@ -85,7 +85,9 @@ func (h *Hub) serveWs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Hub) broadcastNextMessage(force bool) {
-	defer h.saveMessages()
+	db := open(h.Name)
+	defer db.close()
+
 	// overwrite current message only if forced
 	// or if there is currently no message
 	if !force && h.hasMessage {
@@ -93,26 +95,21 @@ func (h *Hub) broadcastNextMessage(force bool) {
 		h.broadcast <- []byte(`{"meta":"new"}`)
 		return
 	}
-	h.Queue.Lock()
+
+	messages, err := db.popMessage()
+
 	var messageHTML messageHTML
-	if len(h.Queue.Messages) == 0 {
+	if err != nil {
 		messageHTML.Message = "No messages."
 		h.hasMessage = false
 	} else {
-		message := h.Queue.Messages[0]
-		if len(h.Queue.Messages) == 1 {
-			h.Queue.Messages = []messageJSON{}
-		} else {
-			h.Queue.Messages = h.Queue.Messages[1:]
-		}
-		messageHTML.Message = message.Message
-		messageHTML.Submessage = fmt.Sprintf("Sent from %s %s.", message.From, humanize.Time(message.Timestamp))
-		if len(h.Queue.Messages) > 0 {
+		messageHTML.Message = messages[0].Message
+		messageHTML.Submessage = fmt.Sprintf("Sent from %s %s.", messages[0].From, humanize.Time(messages[0].Timestamp))
+		if len(messages) > 0 {
 			messageHTML.Meta = "more messages"
 		}
 		h.hasMessage = true
 	}
-	h.Queue.Unlock()
 
 	bMessage, errMarshal := json.Marshal(messageHTML)
 	if errMarshal != nil {

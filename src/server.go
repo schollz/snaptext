@@ -29,7 +29,7 @@ func Run(port string) (err error) {
 			time.Sleep(1 * time.Second)
 			namesToDelete := make(map[string]struct{})
 			for name := range hubs {
-				log.Debugf("hub %s has %d clients", name, len(hubs[name].clients))
+				// log.Debugf("hub %s has %d clients", name, len(hubs[name].clients))
 				if len(hubs[name].clients) == 0 {
 					namesToDelete[name] = struct{}{}
 				}
@@ -92,15 +92,24 @@ func handlerPostMessage(c *gin.Context) {
 		if err != nil {
 			return
 		}
+		log.Debug("bound message")
 		message = fmt.Sprintf("got message for %s", m.To)
-		m, err := validateMessage(m)
+		m, err = validateMessage(m)
 		if err != nil {
 			return
 		}
-		err = saveMessage(m.To, m)
+		log.Debug("validated messages")
+		db := open(m.To)
+		err = db.saveMessage(m)
+		if err != nil {
+			log.Error(err)
+		}
+		db.close()
+		log.Debug("saved message")
 		if _, ok := hubs[m.To]; ok {
 			hubs[m.To].broadcastNextMessage(false)
 		}
+		log.Debug("broadcast message")
 		return
 	}(c)
 	if err != nil {

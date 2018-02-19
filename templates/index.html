@@ -89,14 +89,24 @@
     <div class="footer">
         <footer class="bg-near-black white-80 pv5 pv6-l ph4 mt4">
             <p class="f4 tc">
+                {{ if .Form }}
                 <span class="dib mr4 mr5-ns">
-                    <span class="gray">showing</span>&nbsp;
-                    <a class="link white-80 hover-light-purple" href="https://github.com/schollz/snaptext">snaptext</a>
-                    <span class="gray">
-                        <br>messages for zack</span>
+                <span class="gray">writing</span>&nbsp;
+                <a class="link white-80 hover-light-purple" href="https://github.com/schollz/snaptext">snaptext</a>
+                <span class="gray"><br>&nbsp;</span>
                 </span>
-                <span class="dib mr4 gray dim mr5-ns">Your message will show up right after it is sent.
-                    <br>Once shown, your message is deleted.</span>
+            <span class="dib mr4 gray dim mr5-ns">Your message will show up right after it is sent.
+                <br>Once shown, your message is deleted.</span>
+                {{ else }}
+                <span class="dib mr4 mr5-ns">
+                        <span class="gray">reading</span>&nbsp;
+                        <a class="link white-80 hover-light-purple" href="https://github.com/schollz/snaptext">snaptext</a>
+                        <span class="gray">
+                        <br>messages for zack</span>
+                    </span>
+                    <span class="dib mr4 gray dim mr5-ns">Your message will show up right after it is sent.
+                        <br>Once shown, your message is deleted.</span>        
+                {{ end }}
             </p>
         </footer>
     </div>

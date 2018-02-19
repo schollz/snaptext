@@ -1,7 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"path"
 	"strings"
 	"time"
 
@@ -42,4 +45,53 @@ func validateMessage(m messageJSON) (messageJSON, error) {
 		err = errors.New("to, from, and message cannot be empty")
 	}
 	return m, err
+}
+
+func saveMessages(name string, messages []messageJSON) (err error) {
+	messageQueue, err := json.Marshal(h.Queue.Messages)
+	if err != nil {
+		return
+	}
+	err = ioutil.WriteFile(path.Join("data", name+".json"), messageQueue, 0644)
+	return
+}
+
+func saveMessage(name string, message messageJSON) (err error) {
+	var messages []messageJSON
+	messagesB, errRead := ioutil.ReadFile(path.Join("data", name+".json"))
+	if errRead == nil {
+		err = json.Unmarshal(messagesB, &messages)
+		if err == nil {
+			return err
+		}
+	} else {
+		messages = []messageJSON{}
+	}
+	messages = append(messages, message)
+	messageQueue, err := json.Marshal(messages)
+	if err != nil {
+		return
+	}
+	err = ioutil.WriteFile(path.Join("data", name+".json"), messageQueue, 0644)
+	return
+}
+
+func popMessage(name string) (message messageJSON, err error) {
+	messagesB, errRead := ioutil.ReadFile(path.Join("data", name+".json"))
+	if errRead != nil {
+		return errors.New("no messages")
+	}
+	var messages []messageJSON
+	err = json.Unmarshal(messagesB, &messages)
+	if err == nil {
+		return err
+	}
+	message = messages[0]
+	if len(messages) == 1 {
+		messages = []messageJSON{}
+	} else {
+		messages = messages[1:]
+	}
+	err = saveMessages(name, messages)
+	return
 }

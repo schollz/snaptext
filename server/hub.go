@@ -3,10 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"path"
-	"sync"
 
 	log "github.com/cihub/seelog"
 	humanize "github.com/dustin/go-humanize"
@@ -27,17 +24,9 @@ type Hub struct {
 	// Unregister requests from clients.
 	unregister chan *Client
 
-	// time to next message
-	Queue messageQueue
-
 	Name string
 
 	hasMessage bool
-}
-
-type messageQueue struct {
-	Messages []messageJSON
-	sync.RWMutex
 }
 
 func newHub(name string) *Hub {
@@ -48,11 +37,6 @@ func newHub(name string) *Hub {
 		clients:    make(map[*Client]bool),
 		hasMessage: false,
 		Name:       name,
-		Queue:      messageQueue{Messages: []messageJSON{}},
-	}
-	err := h.loadMessages()
-	if err != nil {
-		log.Warn(err)
 	}
 	return h
 }
@@ -84,18 +68,6 @@ func (h *Hub) run() {
 	}
 }
 
-func (h *Hub) handleMessage(m messageJSON) (err error) {
-	m, err = validateMessage(m)
-	if err != nil {
-		return
-	}
-	h.Queue.Lock()
-	h.Queue.Messages = append(h.Queue.Messages, m)
-	h.Queue.Unlock()
-	go h.broadcastNextMessage(false)
-	return
-}
-
 // serveWs handles websocket requests from the peer.
 func (h *Hub) serveWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -110,34 +82,6 @@ func (h *Hub) serveWs(w http.ResponseWriter, r *http.Request) {
 	// new goroutines.
 	go client.writePump()
 	go client.readPump()
-}
-
-func (h *Hub) saveMessages() (err error) {
-	// always write state
-	h.Queue.Lock()
-	messageQueue, err := json.Marshal(h.Queue.Messages)
-	h.Queue.Unlock()
-	if err != nil {
-		return
-	}
-	err = ioutil.WriteFile(path.Join("data", h.Name+".json"), messageQueue, 0644)
-	return
-}
-
-func (h *Hub) loadMessages() (err error) {
-	hData, err := ioutil.ReadFile(path.Join("data", h.Name+".json"))
-	if err != nil {
-		return
-	}
-	var messages []messageJSON
-	err = json.Unmarshal(hData, &messages)
-	if err != nil {
-		return
-	}
-	h.Queue.Lock()
-	h.Queue.Messages = messages
-	h.Queue.Unlock()
-	return
 }
 
 func (h *Hub) broadcastNextMessage(force bool) {

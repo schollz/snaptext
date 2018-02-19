@@ -16,7 +16,7 @@ import (
 var hubs map[string]*Hub
 
 func init() {
-	os.MkdirAll("data", 0644)
+	os.MkdirAll("data", 0755)
 }
 
 // Run will run the main program
@@ -93,10 +93,14 @@ func handlerPostMessage(c *gin.Context) {
 			return
 		}
 		message = fmt.Sprintf("got message for %s", m.To)
-		if _, ok := hubs[m.To]; !ok {
+		m, err := validateMessage(m)
+		if err != nil {
 			return
 		}
-		err = hubs[m.To].handleMessage(m)
+		err = saveMessage(m.To, m)
+		if _, ok := hubs[m.To]; ok {
+			hubs[m.To].broadcastNextMessage(false)
+		}
 		return
 	}(c)
 	if err != nil {

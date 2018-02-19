@@ -163,6 +163,13 @@
                     postData();
                 }
             });
+            document.querySelector('#sender').addEventListener('keypress', function (e) {
+                var key = e.which || e.keyCode;
+                if (key === 13) { // 13 is enter
+                    e.preventDefault();
+                    postData();
+                }
+            });
             {{ else }}
             document.querySelector("#nextmessage").addEventListener("click", function (event) {
                 event.preventDefault();

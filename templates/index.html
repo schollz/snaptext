@@ -3,111 +3,8 @@
 
 <head>
     <title>SnapText</title>
-    <script type="text/javascript">
-        var conn;
-        window.onload = function () {
-            {{ if .Form }}
-            document.querySelector("#sendmessage").addEventListener("click", function (event) {
-                event.preventDefault();
-                console.log("submitting message");
-                var xhr = new XMLHttpRequest();
-                var url = "url";
-                xhr.open("POST", "/", true);
-                xhr.setRequestHeader("Content-type", "application/json");
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        var jsonPayload = JSON.parse(xhr.responseText);
-                        console.log(jsonPayload);
-                        if (jsonPayload.success==true) {
-                            swal({
-                                text: jsonPayload.message,
-                                icon: "success",
-                            });
-                            document.getElementById("messageHTML").innerText = ""
-                            document.getElementById("recipient").innerText = ""
-                        } else {
-                            swal({
-                                text: jsonPayload.message,
-                                icon: "error",
-                            }); 
-                        }
-                    }
-                };
-                var toText = document.getElementById("recipient").innerText;
-                var fromText = document.getElementById("sender").innerText;
-                var messageText = document.getElementById("messageHTML").innerText;
-                var data = JSON.stringify({"to": toText, "from":fromText,"message":messageText});
-                console.log(data);
-                xhr.send(data);
-                return false;
-            }, false);
-            {{ else }}
-            document.querySelector("#nextmessage").addEventListener("click", function (event) {
-                event.preventDefault();
-                console.log("next message")
-                if (!conn) {
-                    return false;
-                }
-                conn.send(JSON.stringify({
-                    "name": "{{ .Name }}",
-                    "message": "next"
-                }));
-                return false;
-            }, false);
-            {{ end }}
-            var reconnection;
 
-            function connect() {
-                console.log("trying to connect")
-                if (window["WebSocket"]) {
-                    console.log("connecting to server")
-                    conn = new WebSocket(window.location.origin.replace("http", "ws") + "/ws?name={{ .Name }}");
-                    conn.onclose = function (evt) {
-                        console.log("connection closed")
-                        document.getElementById("submessageHTML").innerHTML = "<em>No connection.</em>";
-                        reconnection = setTimeout(function () {
-                            connect();
-                        }, 1000);
-                    };
-                    conn.onmessage = function (evt) {
-                        data = JSON.parse(evt.data)
-                        console.log(data);
-                        if (typeof data.message != 'undefined') {
-                            document.getElementById("messageHTML").innerHTML = data.message
-                            document.getElementById("submessageHTML").innerHTML = data.submessage
-                        }
-                        if (data.meta != "") {
-                            document.getElementById("nextmessage").innerHTML = "Next message"
-                        } else {
-                            document.getElementById("nextmessage").innerHTML = ""
-                        }
-                    };
-                    conn.onerror = function (evt) {
-                        console.log("error")
-                        console.log(evt);
-                    }
-                    conn.onopen = function (evt) {
-                        clearTimeout(reconnection);
-                        console.log("connected")
-                        conn.send(JSON.stringify({
-                            "name": "{{ .Name }}",
-                            "message": "next"
-                        }));
-                    }
-                } else {
-                    var item = document.getElementById("messageHTML");
-                    item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-                }
-            } 
-            {{if not .Form }}
-            connect(); 
-           {{ end }}
-
-            document.getElementById("messageHTML").focus();
-        };
-    </script>
     <link rel="stylesheet" href="/static/tachyons.min.css">
-    <script src="/static/sweetalert.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Acme" rel="stylesheet">
     <style>
         .swal-overlay {
@@ -204,13 +101,123 @@
         </footer>
     </div>
 
-</body>
 
-<!-- <div id="log"></div> -->
-<!-- <form id="form">
-    <input type="submit" value="Send" />
-    <input type="text" id="msg" size="64"/>
-</form> -->
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script type="text/javascript">
+        window.swal = swal;
+        var conn;
+        window.onload = function () {
+            {{ if .Form }}
+            function postData() {
+                console.log("submitting message");
+                var xhr = new XMLHttpRequest();
+                var url = "url";
+                xhr.open("POST", "/", true);
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var jsonPayload = JSON.parse(xhr.responseText);
+                        console.log(jsonPayload);
+                        if (jsonPayload.success==true) {
+                            swal({
+                                text: jsonPayload.message,
+                                icon: "success",
+                            });
+                            document.getElementById("messageHTML").innerText = ""
+                            document.getElementById("recipient").innerText = ""
+                        } else {
+                            swal({
+                                text: jsonPayload.message,
+                                icon: "error",
+                            }); 
+                        }
+                    }
+                };
+                var toText = document.getElementById("recipient").innerText;
+                var fromText = document.getElementById("sender").innerText;
+                var messageText = document.getElementById("messageHTML").innerText;
+                var data = JSON.stringify({"to": toText, "from":fromText,"message":messageText});
+                console.log(data);
+                xhr.send(data);
+                return false;
+            }
+            document.querySelector("#sendmessage").addEventListener("click", function (event) {
+                event.preventDefault();
+                postData();
+                return false;
+            }, false);
+            document.querySelector('#recipient').addEventListener('keypress', function (e) {
+                var key = e.which || e.keyCode;
+                if (key === 13) { // 13 is enter
+                    e.preventDefault();
+                    postData();
+                }
+            });
+            {{ else }}
+            document.querySelector("#nextmessage").addEventListener("click", function (event) {
+                event.preventDefault();
+                console.log("next message")
+                if (!conn) {
+                    return false;
+                }
+                conn.send(JSON.stringify({
+                    "name": "{{ .Name }}",
+                    "message": "next"
+                }));
+                return false;
+            }, false);
+            {{ end }}
+            var reconnection;
+
+            function connect() {
+                console.log("trying to connect")
+                if (window["WebSocket"]) {
+                    console.log("connecting to server")
+                    conn = new WebSocket(window.location.origin.replace("http", "ws") + "/ws?name={{ .Name }}");
+                    conn.onclose = function (evt) {
+                        console.log("connection closed")
+                        document.getElementById("submessageHTML").innerHTML = "<em>No connection.</em>";
+                        reconnection = setTimeout(function () {
+                            connect();
+                        }, 1000);
+                    };
+                    conn.onmessage = function (evt) {
+                        data = JSON.parse(evt.data)
+                        console.log(data);
+                        if (typeof data.message != 'undefined') {
+                            document.getElementById("messageHTML").innerHTML = data.message
+                            document.getElementById("submessageHTML").innerHTML = data.submessage
+                        }
+                        if (data.meta != "") {
+                            document.getElementById("nextmessage").innerHTML = "Next message"
+                        } else {
+                            document.getElementById("nextmessage").innerHTML = ""
+                        }
+                    };
+                    conn.onerror = function (evt) {
+                        console.log("error")
+                        console.log(evt);
+                    }
+                    conn.onopen = function (evt) {
+                        clearTimeout(reconnection);
+                        console.log("connected")
+                        conn.send(JSON.stringify({
+                            "name": "{{ .Name }}",
+                            "message": "next"
+                        }));
+                    }
+                } else {
+                    var item = document.getElementById("messageHTML");
+                    item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+                }
+            } 
+            {{if not .Form }}
+            connect(); 
+           {{ end }}
+
+            document.getElementById("messageHTML").focus();
+        };
+    </script>
 </body>
 
 </html>

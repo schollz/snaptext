@@ -37,6 +37,7 @@ func validateMessage(m messageJSON) (messageJSON, error) {
 	p.AllowElements("p")
 	p.AllowElements("em")
 	p.AllowElements("i")
+	p.AllowElements("small")
 	m.Message = p.Sanitize(m.Message)
 	if len(m.To) == 0 || len(m.From) == 0 || len(m.Message) == 0 {
 		err = errors.New("to, from, and message cannot be empty")

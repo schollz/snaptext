@@ -88,7 +88,7 @@
 <body>
     <div class="wrapper">
         <div class="pa3 pa4-ns mt5">
-            <div class="black b f1 f-headline-ns tc db mb3 mb4-ns" id="messageHTML" {{ if .Form }}contenteditable="true" data-text="Type your message."{{ end }}>{{ if .Form }}{{else}}No messages.{{end}}</div>
+            <div class="black b f1 f-headline-ns tc db mb3 mb4-ns" id="messageHTML" {{ if .Form }}contenteditable="true" data-text="Type your message."{{ end }}>{{ if .Form }}{{else}}{{.Message}}{{end}}</div>
             <div class="tc pb3">
                 {{ if .Form }}To: &nbsp;
                 <div class="b f6 f5-ns dib mr3" id="recipient" contenteditable="true"  data-text="recipient">{{ with .To }}{{.}}{{end}}</div>
@@ -96,9 +96,10 @@
                 <div class="b f6 f5-ns dib mr3" id="sender" contenteditable="true" data-text="Sender">{{ with .From }}{{.}}{{end}}</div>
                 <a class="link dim gray f6 f5-ns dib mr3" id="sendmessage">Send</a>
                 {{ else }}
-                <div class="b gray f6 f5-ns dib mr3" id="submessageHTML" ></div>
-                <a class="link dim gray f6 f5-ns dib mr3" id="nextmessage"></a>
+                <div class="b gray f6 f5-ns dib mr3" id="submessageHTML" >{{.Submessage}}</div>
+                <a class="link dim gray f6 f5-ns dib mr3" id="nextmessage">{{ if .MoreMessages}}Next{{end}}</a>
                 {{ end }}
+                <div class="b gray f6 f5-ns dib mr3" id="connectionInfo" ></div>
             </div>
         </div>
         <div class="push"></div>
@@ -234,7 +235,7 @@
                     conn = new WebSocket(window.location.origin.replace("http", "ws") + "/ws?name={{ .Name }}");
                     conn.onclose = function (evt) {
                         console.log("connection closed")
-                        document.getElementById("submessageHTML").innerHTML = "<em>No connection.</em>";
+                        document.getElementById("connectionInfo").innerHTML = "<em>No connection.</em>";
                         reconnection = setTimeout(function () {
                             connect();
                         }, 1000);
@@ -247,7 +248,7 @@
                             document.getElementById("submessageHTML").innerHTML = data.submessage
                         }
                         if (data.meta != "") {
-                            document.getElementById("nextmessage").innerHTML = "Next message"
+                            document.getElementById("nextmessage").innerHTML = "Next"
                         } else {
                             document.getElementById("nextmessage").innerHTML = ""
                         }
@@ -259,10 +260,11 @@
                     conn.onopen = function (evt) {
                         clearTimeout(reconnection);
                         console.log("connected")
-                        conn.send(JSON.stringify({
-                            "name": "{{ .Name }}",
-                            "message": "next"
-                        }));
+                        document.getElementById("connectionInfo").innerHTML = "";
+                        // conn.send(JSON.stringify({
+                        //     "name": "{{ .Name }}",
+                        //     "message": "next"
+                        // }));
                     }
                 } else {
                     var item = document.getElementById("messageHTML");

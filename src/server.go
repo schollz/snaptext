@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -82,9 +83,13 @@ func Run(port string) (err error) {
 			c.Data(http.StatusOK, contentType(filename), data)
 			return
 		} else {
+			m, _ := getNextMessage(strings.ToLower(name[1:]))
 			c.HTML(http.StatusOK, "index.html", gin.H{
-				"Name": name[1:],
-				"Form": false,
+				"Name":         name[1:],
+				"Form":         false,
+				"Message":      template.HTML(m.Message),
+				"Submessage":   template.HTML(m.Submessage),
+				"MoreMessages": m.Meta == "more messages",
 			})
 		}
 	})

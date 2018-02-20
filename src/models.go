@@ -2,9 +2,11 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
+	humanize "github.com/dustin/go-humanize"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -43,4 +45,22 @@ func validateMessage(m messageJSON) (messageJSON, error) {
 		err = errors.New("to, from, and message cannot be empty")
 	}
 	return m, err
+}
+
+func getNextMessage(name string) (m messageHTML, err error) {
+	db := open(name)
+	defer db.close()
+
+	messages, err := db.popMessage()
+
+	if err != nil {
+		m.Message = "No messages."
+	} else {
+		m.Message = messages[0].Message
+		m.Submessage = fmt.Sprintf("Sent from <a class='link dim mid-gray' href='/?to=%s&from=%s'>%s</a> %s.", strings.ToLower(messages[0].From), name, messages[0].From, humanize.Time(messages[0].Timestamp))
+		if len(messages) > 1 {
+			m.Meta = "more messages"
+		}
+	}
+	return
 }

@@ -2,12 +2,9 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 
 	log "github.com/cihub/seelog"
-	humanize "github.com/dustin/go-humanize"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the
@@ -94,8 +91,6 @@ func (h *Hub) serveWs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Hub) broadcastNextMessage(force bool) {
-	db := open(h.Name)
-	defer db.close()
 
 	// overwrite current message only if forced
 	// or if there is currently no message
@@ -105,20 +100,8 @@ func (h *Hub) broadcastNextMessage(force bool) {
 		return
 	}
 
-	messages, err := db.popMessage()
-
-	var messageHTML messageHTML
-	if err != nil {
-		messageHTML.Message = "No messages."
-		h.hasMessage = false
-	} else {
-		messageHTML.Message = messages[0].Message
-		messageHTML.Submessage = fmt.Sprintf("Sent from <a class='link dim mid-gray' href='/?to=%s&from=%s'>%s</a> %s.", strings.ToLower(messages[0].From), h.Name, messages[0].From, humanize.Time(messages[0].Timestamp))
-		if len(messages) > 1 {
-			messageHTML.Meta = "more messages"
-		}
-		h.hasMessage = true
-	}
+	messageHTML, err := getNextMessage(h.Name)
+	h.hasMessage = err == nil
 
 	bMessage, errMarshal := json.Marshal(messageHTML)
 	if errMarshal != nil {

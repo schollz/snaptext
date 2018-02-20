@@ -5,7 +5,7 @@
 <br>
 <a href="https://travis-ci.org/schollz/snaptext"><img src="https://travis-ci.org/schollz/snaptext.svg?branch=master" alt="Build Status"></a>
 <a href="https://github.com/schollz/snaptext/releases/latest"><img src="https://img.shields.io/badge/version-0.1.0-brightgreen.svg?style=flat-square" alt="Version"></a>
-<a href="https://goreportcard.com/report/github.com/schollz/croc"><img src="https://goreportcard.com/badge/github.com/schollz/croc" alt="Go Report Card"></a>
+<a href="https://goreportcard.com/report/github.com/schollz/snaptext"><img src="https://goreportcard.com/badge/github.com/schollz/snaptext" alt="Go Report Card"></a>
 <a href="https://www.paypal.me/ZackScholl/5.00"><img src="https://img.shields.io/badge/donate-$5-brown.svg" alt="Donate"></a>
 </p>
 

@@ -11,9 +11,9 @@
 
 <p align="center">Like snapchat, but for text.</p>
 
-*snaptext* is a web app (and API) that lets you easily send and receive self-destructing messages in real-time. For example, you can go to [`snaptext.live/?to=schollz`](https://snaptext.live/?to=schollz) and write me a message. The message will be stored in a queue for me (`schollz`) and it will be destroyed when a browser is opened at [`snaptext.live/schollz`](https://snaptext.live/schollz) which pops the first message (FIFO). 
+*snaptext* is a web app (and API) that lets you easily send and receive self-destructing messages in real-time. For example, you can go to [`snaptext.live/?to=schollz`](https://snaptext.live/?to=schollz) and write me a message. The message will be stored in a queue for me (`schollz`) and it will be destroyed when a browser is opened at [`snaptext.live/schollz`](https://snaptext.live/schollz) which pops the first message. 
 
-Messaging occurs in real-time using websockets, so to guarantee that you receive the message its best to have the browser open or use a obfuscated ID. Messages are queued for each ID, so you can send multiple messages and they will be read in order.
+Messaging occurs in real-time using websockets, so to guarantee that you receive the message its best to have the browser open or use a obfuscated ID. Messages are queued for each ID, so you can send multiple messages and they will be read in order (FIFO).
 
 # Why?
 

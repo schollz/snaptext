@@ -1,6 +1,6 @@
 <p align="center">
 <img
-    src="https://raw.githubusercontent.com/schollz/snaptext/master/static/favicon/android-icon-144x144.png?token=AGPyE68M8fOMP_cj87oSPy7gbOR2yVimks5alHtwwA%3D%3D"
+    src="https://raw.githubusercontent.com/schollz/snaptext/master/static/favicon/logo.png?token=AGPyE4FL_L452-C_VhQ1bi8WiJhpB6ALks5alK3HwA%3D%3D"
     width="144px" border="0" alt="snaptext">
 <br>
 <a href="https://travis-ci.org/schollz/snaptext"><img src="https://travis-ci.org/schollz/snaptext.svg?branch=master" alt="Build Status"></a>

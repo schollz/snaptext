@@ -1,7 +1,7 @@
 <p align="center">
 <img
-    src="https://raw.githubusercontent.com/schollz/snaptext/master/static/favicon/android-icon-144x144.png?token=AGPyE68M8fOMP_cj87oSPy7gbOR2yVimks5alHtwwA%3D%3D"
-    width="144px" border="0" alt="croc">
+    src="https://raw.githubusercontent.com/schollz/snaptext/master/static/favicon/logo.png?token=AGPyEzC7XAbvw-NmBYu1_nTBKjYrCDxJks5alKNpwA%3D%3D"
+    width="260" height="80" border="0" alt="snaptext">
 <br>
 <a href="https://travis-ci.org/schollz/croc"><img src="https://travis-ci.org/schollz/croc.svg?branch=master" alt="Build Status"></a>
 <a href="https://github.com/schollz/croc/releases/latest"><img src="https://img.shields.io/badge/version-0.1.0-brightgreen.svg?style=flat-square" alt="Version"></a>

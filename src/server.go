@@ -56,6 +56,8 @@ func Run(port string) (err error) {
 			c.HTML(http.StatusOK, "index.html", gin.H{
 				"Name": name[1:],
 				"Form": true,
+				"To":   c.DefaultQuery("to", ""),
+				"From": c.DefaultQuery("from", ""),
 			})
 		} else if name == "/ws" {
 			name = c.DefaultQuery("name", "")

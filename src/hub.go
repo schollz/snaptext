@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	log "github.com/cihub/seelog"
 	humanize "github.com/dustin/go-humanize"
@@ -112,7 +113,7 @@ func (h *Hub) broadcastNextMessage(force bool) {
 		h.hasMessage = false
 	} else {
 		messageHTML.Message = messages[0].Message
-		messageHTML.Submessage = fmt.Sprintf("Sent from %s %s.", messages[0].From, humanize.Time(messages[0].Timestamp))
+		messageHTML.Submessage = fmt.Sprintf("Sent from <a class='link dim mid-gray' href='/?to=%s&from=%s'>%s</a> %s.", strings.ToLower(messages[0].From), h.Name, messages[0].From, humanize.Time(messages[0].Timestamp))
 		if len(messages) > 1 {
 			messageHTML.Meta = "more messages"
 		}

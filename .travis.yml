@@ -1,8 +1,7 @@
 language: go
 
 before_install:
-  - go get github.com/jteeuwen/go-bindata
-  - go install github.com/jteeuwen/go-bindata
+  - go get github.com/jteeuwen/go-bindata/...
   
 go:
   - tip

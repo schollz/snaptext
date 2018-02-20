@@ -23,6 +23,8 @@ There may be other uses for *snaptext* - it is basically a simple, transient way
 
 # Usage
 
+*snaptext* only supports doing two things: writing or reading messages.
+
 ## Writing messages
 
 You can write messages online. Goto [`snaptext.live`](https://snaptext.live) to write messages. The message can be text or HTML, though a limited number of HTML tags are allowed (to prevent XSS attacks). 
@@ -43,7 +45,7 @@ The recipient controls where the message can be seen (this particular message wi
 curl  -d '{"to":"snaptext","from":"schollz","message":"Just a test"}' -X POST https://snaptext.live
 ```
 
-## Reading messages online
+## Reading messages
 
 Goto [`snaptext.live/snapchat`](https://snaptext.live/ID) to read messages that have been written to `snapchat`. Once a message is read, it is destroyed. There is no check on who reads a message - it is first come first serve. However, anyone with a browser currently connected can read an incoming message.
 

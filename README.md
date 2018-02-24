@@ -51,7 +51,7 @@ Goto [`snaptext.live/snapchat`](https://snaptext.live/ID) to read messages that 
 
 # Run your own server
 
-The easiest way is using Go:
+The easiest way is using Go (requires Go 1.9+):
 
 ```
 $ go install -v github.com/schollz/snaptext

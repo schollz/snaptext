@@ -10,6 +10,7 @@ import (
 	"time"
 
 	log "github.com/cihub/seelog"
+	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,7 +47,7 @@ func Run(port string) (err error) {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	// Standardize logs
-	r.LoadHTMLGlob("templates/*")
+	r.HTMLRender = loadTemplates("index.html")
 	r.Use(middleWareHandler(), gin.Recovery())
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
@@ -167,4 +168,24 @@ func contentType(filename string) string {
 		return "application/xml"
 	}
 	return "text/html"
+}
+
+func loadTemplates(list ...string) multitemplate.Render {
+	r := multitemplate.New()
+
+	for _, x := range list {
+		templateString, err := Asset("templates/" + x)
+		if err != nil {
+			panic(err)
+		}
+
+		tmplMessage, err := template.New(x).Parse(string(templateString))
+		if err != nil {
+			panic(err)
+		}
+
+		r.Add(x, tmplMessage)
+	}
+
+	return r
 }

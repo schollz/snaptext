@@ -21,6 +21,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/gin-contrib/multitemplate"
+  packages = ["."]
+  revision = "d2d1ac3f563eac04b11ba01db7ac9f0eb9dc3a94"
+
+[[projects]]
+  branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
@@ -28,7 +34,12 @@
 [[projects]]
   branch = "master"
   name = "github.com/gin-gonic/gin"
-  packages = [".","binding","json","render"]
+  packages = [
+    ".",
+    "binding",
+    "json",
+    "render"
+  ]
   revision = "5d3f30cfc81f9109850fa9043a19783cbbde68a5"
 
 [[projects]]
@@ -93,7 +104,10 @@
 
 [[projects]]
   name = "github.com/v2pro/plz"
-  packages = ["concurrent","reflect2"]
+  packages = [
+    "concurrent",
+    "reflect2"
+  ]
   revision = "10fc95fad3224a032229e59f6e7023137d82b526"
   version = "0.9.1"
 
@@ -106,7 +120,10 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["html","html/atom"]
+  packages = [
+    "html",
+    "html/atom"
+  ]
   revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
 
 [[projects]]
@@ -130,6 +147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a93685bbac678f10e65b2b67ea8b847936f25011ac45ee0ac285905e0719eb0b"
+  inputs-digest = "7ea742154baceb8e6dad80468d1672a8740600136815227a0e60419cc13ec141"
   solver-name = "gps-cdcl"
   solver-version = 1

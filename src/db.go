@@ -20,7 +20,7 @@ type Database struct {
 
 func open(name string) *Database {
 	d := new(Database)
-	d.Name = name
+	d.Name = sha256sum(name)
 	d.fileLock = flock.NewFlock(path.Join("data", name+".lock"))
 	for {
 		locked, err := d.fileLock.TryLock()
@@ -71,7 +71,12 @@ func (d *Database) saveMessages(messages []messageJSON) (err error) {
 		if errMarshal != nil {
 			return errMarshal
 		}
-		err = ioutil.WriteFile(path.Join("data", d.Name+".json"), messageBytes, 0644)
+		encrypted, errEncrypt := encryptBytes(messageBytes, []byte(d.Name))
+		if errEncrypt != nil {
+			err = errors.Wrap(err, "could not encrypt "+d.Name)
+			return
+		}
+		err = ioutil.WriteFile(path.Join("data", d.Name+".json"), encrypted, 0644)
 		log.Debugf("wrote %d messages", len(messages))
 	}
 	return
@@ -83,7 +88,12 @@ func (d *Database) popMessage() (messages []messageJSON, err error) {
 		err = errors.New("no messages")
 		return
 	}
-	err = json.Unmarshal(messagesB, &messages)
+	decrypted, err := decryptBytes(messagesB, []byte(d.Name))
+	if err != nil {
+		err = errors.Wrap(err, "could not decrypt "+d.Name)
+		return
+	}
+	err = json.Unmarshal(decrypted, &messages)
 	if err != nil {
 		return
 	}

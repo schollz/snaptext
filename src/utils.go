@@ -10,12 +10,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	math_rand "math/rand"
 	"time"
 
 	"golang.org/x/crypto/pbkdf2"
 )
+
+func sha256sum(s string) string {
+	h := sha256.New()
+	h.Write([]byte("snaptext salt"))
+	h.Write([]byte(s))
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
 
 func encryptBytes(plaintext []byte, passphrase []byte) (encrypted []byte, err error) {
 	encryptedS, salt, iv := encrypt(plaintext, passphrase)

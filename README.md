@@ -3,10 +3,16 @@
     src="https://raw.githubusercontent.com/schollz/snaptext/master/static/favicon/logo.png?token=AGPyE4FL_L452-C_VhQ1bi8WiJhpB6ALks5alK3HwA%3D%3D"
     width="260px" border="0" alt="snaptext">
 <br>
-<a href="https://travis-ci.org/schollz/snaptext"><img src="https://travis-ci.org/schollz/snaptext.svg?branch=master" alt="Build Status"></a>
-<a href="https://github.com/schollz/snaptext/releases/latest"><img src="https://img.shields.io/badge/version-0.1.0-brightgreen.svg?style=flat-square" alt="Version"></a>
-<a href="https://goreportcard.com/report/github.com/schollz/snaptext"><img src="https://goreportcard.com/badge/github.com/schollz/snaptext" alt="Go Report Card"></a>
-<a href="https://www.paypal.me/ZackScholl/5.00"><img src="https://img.shields.io/badge/donate-$5-brown.svg" alt="Donate"></a>
+<a href="https://travis-ci.org/schollz/snaptext"><img
+src="https://travis-ci.org/schollz/snaptext.svg?branch=master" alt="Build
+Status"></a> <a
+href="https://github.com/schollz/snaptext/releases/latest"><img
+src="https://img.shields.io/badge/version-2.0.0-brightgreen.svg?style=flat-square"
+alt="Version"></a> <a
+href="https://goreportcard.com/report/github.com/schollz/snaptext"><img
+src="https://goreportcard.com/badge/github.com/schollz/snaptext" alt="Go
+Report Card"></a> <a href="https://www.paypal.me/ZackScholl/5.00"><img
+src="https://img.shields.io/badge/donate-$5-brown.svg" alt="Donate"></a>
 </p>
 
 <p align="center">Like snapchat, but for text.</p>
